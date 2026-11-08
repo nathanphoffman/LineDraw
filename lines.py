@@ -9,7 +9,8 @@ from controls import get_control_direction, Direction
 from shapely.geometry import LineString
 
 
-lines = []
+LINES = []
+ANCHOR_LINES = []
 
 CURRENT_POINT = (10,HEIGHT)
 START_POINT = (10,HEIGHT)
@@ -38,9 +39,8 @@ def get_new_point(x_delta, y_delta):
     return (new_x, new_y)
 
 def render_past_lines(pygame, surface):
-    for line in lines:
+    for line in LINES:
         pygame.draw.line(surface, LINE_COLOR, line.start, line.end)
-
 
 def get_xy_delta(direction, distance):
     y_delta = 0
@@ -65,8 +65,15 @@ def is_collision_between(line1, line2):
 
     return l1.crosses(l2)
 
+def colliding_line_from(current_line):
+    for line in LINES:
+        if is_collision_between(current_line, line):
+            return line
+
+    return None
+
 def is_collisions_from(current_line):
-    for line in lines:
+    for line in LINES:
         if is_collision_between(current_line, line):
             return True
 
@@ -101,7 +108,7 @@ def handle_line_drawing(pygame, surface, dt, elapsed):
         handle_current_line(pygame, surface, direction, dt)
     
     else:
-        lines.append(Line(START_POINT,CURRENT_POINT))
+        LINES.append(Line(START_POINT,CURRENT_POINT))
         START_POINT = CURRENT_POINT
         PRIOR_DIRECTION = direction
 
@@ -109,5 +116,3 @@ def handle_line_drawing(pygame, surface, dt, elapsed):
         handle_line_drawing(pygame, surface, dt, elapsed)
         
         
-
-
