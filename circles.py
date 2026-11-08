@@ -5,7 +5,7 @@ from globals import SPEED
 from dataclasses import dataclass
 from screen import WIDTH, HEIGHT
 from utils import random_number
-from lines import LINES, colliding_line_from, Line
+from lines import LINES, intersect_line_from, Line
 from shapely.geometry import LineString
 
 @dataclass
@@ -58,18 +58,18 @@ def get_and_set_new_position(circle, dt):
 
     if x_out_of_bounds and y_out_of_bounds:
         circle.angle = math.pi + circle.angle
-        return get_and_set_new_position(circle, dt)
+        return (int(circle.x), int(circle.y))
 
     elif x_out_of_bounds:
         circle.angle = math.pi - circle.angle
-        return get_and_set_new_position(circle, dt)
+        return (int(circle.x), int(circle.y))
 
     elif y_out_of_bounds:
         circle.angle = -circle.angle
-        return get_and_set_new_position(circle, dt)
+        return (int(circle.x), int(circle.y))
 
 
-    line_colliding = colliding_line_from(Line((circle.x, circle.y),(new_x, new_y)))
+    line_colliding = intersect_line_from(LINES, Line((circle.x, circle.y),(new_x, new_y)))
     if line_colliding is not None:
         (x1,y1) = line_colliding.start
         (x2,y2) = line_colliding.end
@@ -77,15 +77,15 @@ def get_and_set_new_position(circle, dt):
         # vertical line
         if x1 == x2:
             circle.angle = math.pi - circle.angle
-            return get_and_set_new_position(circle, dt)
 
         # horizontal line
         elif y1 == y2:
             circle.angle = -circle.angle
-            return get_and_set_new_position(circle, dt)
 
-    circle.x = int(new_x)
-    circle.y = int(new_y)
+        return (int(circle.x), int(circle.y))
+
+    circle.x = new_x
+    circle.y = new_y
 
     return (circle.x, circle.y)
 

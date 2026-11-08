@@ -59,25 +59,33 @@ def get_xy_delta(direction, distance):
     return (x_delta, y_delta)
 
 
-def is_collision_between(line1, line2):
+def is_cross_between(lines, line1, line2):
     l1 = LineString([line1.start, line1.end])
     l2 = LineString([line2.start, line2.end])
 
     return l1.crosses(l2)
 
-def colliding_line_from(current_line):
-    for line in LINES:
-        if is_collision_between(current_line, line):
+def cross_line_from(lines, current_line):
+    for line in lines:
+        if is_cross_between(lines, current_line, line):
             return line
 
     return None
 
-def is_collisions_from(current_line):
-    for line in LINES:
-        if is_collision_between(current_line, line):
-            return True
+def is_intersect_between(lines, line1, line2):
+    l1 = LineString([line1.start, line1.end])
+    l2 = LineString([line2.start, line2.end])
 
-    return False
+    return l1.intersects(l2)
+
+def intersect_line_from(lines, current_line):
+    for line in lines:
+        if is_intersect_between(lines, current_line, line):
+            return line
+
+    return None
+
+
 
 def handle_current_line(pygame, surface, direction, dt):
     distance = SPEED * dt
@@ -85,9 +93,9 @@ def handle_current_line(pygame, surface, direction, dt):
     global CURRENT_POINT
 
     candidate_point = get_new_point(x_delta, y_delta)
-    is_collision = is_collisions_from(Line(CURRENT_POINT,candidate_point))
+    colliding_line = cross_line_from(LINES, Line(CURRENT_POINT,candidate_point))
 
-    if not is_collision:
+    if colliding_line is None:
         CURRENT_POINT = candidate_point
 
     pygame.draw.line(surface, LINE_COLOR, START_POINT, CURRENT_POINT)
