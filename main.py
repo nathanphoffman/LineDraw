@@ -36,22 +36,26 @@ def spawn_bouncing_circle():
 
     circles.append(Circle(x,y,angle))
 
-def get_reflection_angle(circle):
-    return (circle.x, circle.y)
-
-def out_of_bounds(x, y):
-    x_out_of_bounds = x > WIDTH or x < 0
-    y_out_of_bounds = y > HEIGHT or y < 0
-    return x_out_of_bounds or y_out_of_bounds
 
 def get_and_set_new_position(circle, dt):
     new_x = (circle.x + SPEED * dt * math.cos(circle.angle))
     new_y = (circle.y + SPEED * dt * math.sin(circle.angle))
 
-    if(out_of_bounds(new_x, new_y)):
-        (reflection_x, reflection_y) = get_reflection_angle(circle)
-        circle.x = reflection_x
-        circle.y = reflection_y
+    x_out_of_bounds = new_x > WIDTH or new_x < 0
+    y_out_of_bounds =  new_y > HEIGHT or new_y < 0
+
+    if(x_out_of_bounds and y_out_of_bounds):
+        circle.angle = math.pi + circle.angle
+        return get_and_set_new_position(circle, dt)
+
+    elif(x_out_of_bounds):
+        circle.angle = math.pi - circle.angle
+        return get_and_set_new_position(circle, dt)
+
+    elif(y_out_of_bounds):
+        circle.angle = -circle.angle
+        return get_and_set_new_position(circle, dt)
+
     else:
         circle.x = int(new_x)
         circle.y = int(new_y)
