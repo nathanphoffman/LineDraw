@@ -1,71 +1,19 @@
 import pygame
-import random
-import math
 
 from screen import WIDTH, HEIGHT, Screen
 from dataclasses import dataclass
+from controls import get_control_direction, Direction
+from circles import spawn_and_handle_circles, Circle
 
-BLUE = (0, 0, 255)
-SPEED = 200
-OFFSET = 10
-RADIUS = 5
-CIRCLE_COLOR = (255, 255, 255)
-circles = []
+lines = []
 
 @dataclass
-class Circle:
-    x: float
-    y: float
-    angle: float
+class Line:
+    x1: float
+    y1: float
+    x2: float
+    y2: float
 
-def random_number(start,end):
-    return random.randint(start,end)
-
-def spawn_bouncing_circle():
-    center_x = WIDTH/2
-    center_y = HEIGHT/2
-
-    x_offset = random_number(0,10)
-    y_offset = random_number(0,10)
-
-    angle_degrees = random_number(0,360)
-    angle = math.radians(angle_degrees)
-
-    x = center_x + x_offset
-    y = center_y + y_offset
-
-    circles.append(Circle(x,y,angle))
-
-
-def get_and_set_new_position(circle, dt):
-    new_x = (circle.x + SPEED * dt * math.cos(circle.angle))
-    new_y = (circle.y + SPEED * dt * math.sin(circle.angle))
-
-    x_out_of_bounds = new_x > WIDTH or new_x < 0
-    y_out_of_bounds =  new_y > HEIGHT or new_y < 0
-
-    if(x_out_of_bounds and y_out_of_bounds):
-        circle.angle = math.pi + circle.angle
-        return get_and_set_new_position(circle, dt)
-
-    elif(x_out_of_bounds):
-        circle.angle = math.pi - circle.angle
-        return get_and_set_new_position(circle, dt)
-
-    elif(y_out_of_bounds):
-        circle.angle = -circle.angle
-        return get_and_set_new_position(circle, dt)
-
-    else:
-        circle.x = int(new_x)
-        circle.y = int(new_y)
-
-    return (circle.x, circle.y)
-
-def handle_bouncing_circles(surface, dt):
-    for circle in circles:
-        new_position = get_and_set_new_position(circle, dt)
-        pygame.draw.circle(surface, CIRCLE_COLOR, new_position, RADIUS)
 
 def main():
     screen = Screen()
@@ -73,7 +21,10 @@ def main():
     running = True
     x = 0
     elapsed = 0
-    ready_for_new_circle = True
+    current_control_direction = Direction.UP
+
+    last_pointer_x = 20
+    last_pointer_y = 20
 
     while running:
         dt = clock.tick(60) / 1000 # 60fps
@@ -83,18 +34,12 @@ def main():
                 running = False
 
         screen.surface.fill((0, 0, 0))
+        current_control_direction = get_control_direction(pygame)       
 
-       
+        #render_pointer(current_control_direction)
+        spawn_and_handle_circles(pygame, screen.surface, dt, elapsed)
         # Every 5 seconds
-        if(round(elapsed) % 5 == 0):
-            if(ready_for_new_circle == True):
-                ready_for_new_circle = False
-                spawn_bouncing_circle()
-        else:
-            ready_for_new_circle = True
 
-        handle_bouncing_circles(screen.surface, dt)
-        
         screen.show()
 
     pygame.quit()
