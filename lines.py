@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from screen import WIDTH, HEIGHT
 from utils import random_number
 from controls import get_control_direction, Direction
+from shapely.geometry import LineString
 
 
 lines = []
@@ -58,27 +59,54 @@ def get_xy_delta(direction, distance):
     return (x_delta, y_delta)
 
 
+def is_collision_between(line1, line2):
+    l1 = LineString([line1.start, line1.end])
+    l2 = LineString([line2.start, line2.end])
+
+    return l1.crosses(l2)
+
+def is_collisions_from(current_line):
+    for line in lines:
+        if is_collision_between(current_line, line):
+            return True
+
+    return False
+
+def handle_current_line(pygame, surface, direction, dt):
+    distance = SPEED * dt
+    (x_delta, y_delta) = get_xy_delta(direction, distance)
+    global CURRENT_POINT
+
+    candidate_point = get_new_point(x_delta, y_delta)
+    is_collision = is_collisions_from(Line(CURRENT_POINT,candidate_point))
+
+    if not is_collision:
+        CURRENT_POINT = candidate_point
+
+    pygame.draw.line(surface, LINE_COLOR, START_POINT, CURRENT_POINT)
+
+
 def handle_line_drawing(pygame, surface, dt, elapsed):
 
     global START_POINT
     global PRIOR_DIRECTION
+
     direction = get_control_direction(pygame)
     direction = PRIOR_DIRECTION if direction == None else direction
-    distance = SPEED * dt
 
     render_past_lines(pygame, surface)
 
     # if the user doesnt move their keys it always moves in prior direction
     if direction is PRIOR_DIRECTION:
-        (x_delta, y_delta) = get_xy_delta(direction, distance)
-        global CURRENT_POINT
-        CURRENT_POINT = get_new_point(x_delta, y_delta)
-        pygame.draw.line(surface, LINE_COLOR, START_POINT, CURRENT_POINT)
+        handle_current_line(pygame, surface, direction, dt)
     
     else:
         lines.append(Line(START_POINT,CURRENT_POINT))
         START_POINT = CURRENT_POINT
         PRIOR_DIRECTION = direction
+
+        # technically we will skip this frame on direction change so we need to rerun the line draw before the next frame
+        handle_line_drawing(pygame, surface, dt, elapsed)
         
         
 
