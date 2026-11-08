@@ -2,18 +2,8 @@ import pygame
 
 from screen import WIDTH, HEIGHT, Screen
 from dataclasses import dataclass
-from controls import get_control_direction, Direction
-from circles import spawn_and_handle_circles, Circle
-
-lines = []
-
-@dataclass
-class Line:
-    x1: float
-    y1: float
-    x2: float
-    y2: float
-
+from circles import spawn_and_handle_circles
+from lines import handle_line_drawing
 
 def main():
     screen = Screen()
@@ -21,7 +11,7 @@ def main():
     running = True
     x = 0
     elapsed = 0
-    current_control_direction = Direction.UP
+    #current_control_direction = Direction.UP
 
     last_pointer_x = 20
     last_pointer_y = 20
@@ -34,10 +24,11 @@ def main():
                 running = False
 
         screen.surface.fill((0, 0, 0))
-        current_control_direction = get_control_direction(pygame)       
+        #current_control_direction = get_control_direction(pygame)       
 
         #render_pointer(current_control_direction)
         spawn_and_handle_circles(pygame, screen.surface, dt, elapsed)
+        handle_line_drawing(pygame, screen.surface, dt, elapsed)
         # Every 5 seconds
 
         screen.show()
